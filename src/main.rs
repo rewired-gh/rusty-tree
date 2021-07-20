@@ -1,12 +1,33 @@
+use cli::*;
 use io::*;
+use std::path::{Path, PathBuf};
+use structopt::StructOpt;
 use tree::Tree;
 
+mod cli;
 mod io;
 mod parse;
 mod tree;
 
+const DEFAULT_FILE_PATH: &str = "./tree.yart";
+
 fn main() {
-    let tree = get_tree_from_file(DBG_PATH_TO_FILE).expect("Parse Error");
+    let CommandLineArgs { action, input_file } = CommandLineArgs::from_args();
+    let input_file = input_file
+        .or_else(|| {
+            if Path::new(DEFAULT_FILE_PATH).exists() {
+                Some(PathBuf::from(DEFAULT_FILE_PATH))
+            } else {
+                None
+            }
+        })
+        .expect("F");
+    let mut tree = Tree::new();
+    match action {
+        Action::Read => tree = get_tree_from_file(input_file).unwrap(),
+    };
+
+    // let tree = get_tree_from_file(DBG_PATH_TO_FILE).expect("Parse Error");
 
     println!("\n========================================\n");
     dbg_ignite(&tree, 0, 0);

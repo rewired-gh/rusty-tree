@@ -1,5 +1,5 @@
 use crate::tree::*;
-use std::{error::Error, mem::swap, *};
+use std::{mem::swap, *};
 
 #[derive(Debug)]
 pub struct ParseError {}
