@@ -1,7 +1,7 @@
 use anyhow::Result;
 use cli::*;
 use io::*;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use structopt::StructOpt;
 use tree::Tree;
 
@@ -14,15 +14,7 @@ const DEFAULT_FILE_PATH: &str = "./tree.yart";
 
 fn main() -> Result<()> {
     let CommandLineArgs { action, input_file } = CommandLineArgs::from_args();
-    let input_file = input_file
-        .or_else(|| {
-            if Path::new(DEFAULT_FILE_PATH).exists() {
-                Some(PathBuf::from(DEFAULT_FILE_PATH))
-            } else {
-                None
-            }
-        })
-        .expect("F");
+    let input_file = input_file.unwrap_or(PathBuf::from(DEFAULT_FILE_PATH));
     let tree;
     match action {
         Action::Read => tree = get_tree_from_file(input_file).unwrap(),
