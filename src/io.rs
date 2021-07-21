@@ -1,11 +1,10 @@
 use crate::parse::*;
 use crate::tree::*;
+use anyhow::Result;
 use std::path::PathBuf;
 use std::*;
 
-pub const DBG_PATH_TO_FILE: &str = "./assets/debug.yart";
-
-pub fn get_tree_from_file(path: PathBuf) -> Result<Tree, Box<dyn error::Error>> {
+pub fn get_tree_from_file(path: PathBuf) -> Result<Tree> {
     let content = fs::read_to_string(path)?;
 
     let lines = clean_lines(content.lines().collect());

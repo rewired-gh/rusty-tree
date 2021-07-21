@@ -1,3 +1,4 @@
+use anyhow::Result;
 use cli::*;
 use io::*;
 use std::path::{Path, PathBuf};
@@ -11,7 +12,7 @@ mod tree;
 
 const DEFAULT_FILE_PATH: &str = "./tree.yart";
 
-fn main() {
+fn main() -> Result<()> {
     let CommandLineArgs { action, input_file } = CommandLineArgs::from_args();
     let input_file = input_file
         .or_else(|| {
@@ -22,15 +23,15 @@ fn main() {
             }
         })
         .expect("F");
-    let mut tree = Tree::new();
+    let tree;
     match action {
         Action::Read => tree = get_tree_from_file(input_file).unwrap(),
     };
 
-    // let tree = get_tree_from_file(DBG_PATH_TO_FILE).expect("Parse Error");
-
     println!("\n========================================\n");
-    dbg_ignite(&tree, 0, 0);
+    dbg_ignite(&tree, tree.root_node_index, 0);
+
+    Ok(())
 }
 
 fn dbg_ignite(tree: &Tree, index: usize, depth: usize) {

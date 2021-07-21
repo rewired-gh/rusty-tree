@@ -1,8 +1,6 @@
 use crate::tree::*;
+use anyhow::{bail, Result};
 use std::{mem::swap, *};
-
-#[derive(Debug)]
-pub struct ParseError {}
 
 #[derive(Debug, Clone, Copy)]
 struct NodeArray {
@@ -30,17 +28,9 @@ impl NodeArray {
     }
 }
 
-impl fmt::Display for ParseError {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        write!(fmt, "A error occurred during parsing the file.")
-    }
-}
-
-impl error::Error for ParseError {}
-
-pub fn set_tree(tree: &mut Tree, lines: &Vec<&str>) -> Result<(), Box<dyn error::Error>> {
+pub fn set_tree(tree: &mut Tree, lines: &Vec<&str>) -> Result<()> {
     if lines.is_empty() {
-        return Err("Could not found any effective line in the file.".into());
+        bail!("Could not found any effective line in the file.");
     }
 
     let mut node_arrays_last = Vec::new();
@@ -50,7 +40,7 @@ pub fn set_tree(tree: &mut Tree, lines: &Vec<&str>) -> Result<(), Box<dyn error:
 
     if node_arrays_last.len() == 1 {
         if node_arrays_last[0].end - node_arrays_last[0].start != 1 {
-            return Err("More than one possible root nodes were found.".into());
+            bail!("More than one possible root nodes were found.");
         } else {
             tree.root_node_index = node_arrays_last[0].start;
 
@@ -68,7 +58,7 @@ pub fn set_tree(tree: &mut Tree, lines: &Vec<&str>) -> Result<(), Box<dyn error:
                 for node_array in node_arrays.iter() {
                     loop {
                         if index >= last_end {
-                            return Err("An unaligned group was found.".into());
+                            bail!("An unaligned group was found.");
                         } else if node_array.position == tree.nodes[index].position {
                             tree.nodes[index].children_index_start = node_array.start;
                             tree.nodes[index].children_index_end = node_array.end;
@@ -85,17 +75,13 @@ pub fn set_tree(tree: &mut Tree, lines: &Vec<&str>) -> Result<(), Box<dyn error:
             }
         }
     } else {
-        return Err("More than one possible root nodes were found.".into());
+        bail!("More than one possible root nodes were found.");
     }
 
     Ok(())
 }
 
-fn set_node_arrays(
-    tree: &mut Tree,
-    node_arrays: &mut Vec<NodeArray>,
-    line: &str,
-) -> Result<(), Box<dyn error::Error>> {
+fn set_node_arrays(tree: &mut Tree, node_arrays: &mut Vec<NodeArray>, line: &str) -> Result<()> {
     let mut position = 0;
     let mut is_inside = false;
     let mut current_array = NodeArray::new();
@@ -104,7 +90,7 @@ fn set_node_arrays(
         match char {
             '[' => {
                 if is_inside {
-                    return Err("An unclosed left bracket was found.".into());
+                    bail!("An unclosed left bracket was found.");
                 } else {
                     current_array = NodeArray::from_details(position, tree.nodes.len());
                     is_inside = true;
@@ -112,7 +98,7 @@ fn set_node_arrays(
             }
             ']' => {
                 if !is_inside {
-                    return Err("An unclosed right bracket was found.".into());
+                    bail!("An unclosed right bracket was found.");
                 } else if !current_name.is_empty() {
                     tree.nodes.push(Node::from_details(
                         position - current_name.len(),
@@ -122,7 +108,7 @@ fn set_node_arrays(
                 }
                 current_array.end = tree.nodes.len();
                 if current_array.end == current_array.start {
-                    return Err("An empty group was found.".into());
+                    bail!("An empty group was found.");
                 }
                 node_arrays.push(current_array);
                 is_inside = false;
@@ -142,15 +128,14 @@ fn set_node_arrays(
                 if is_inside {
                     current_name.push(char);
                 } else {
-                    return Err("A node was found in the wild.".into());
+                    bail!("A node was found in the wild.");
                 }
             }
         };
         position += 1;
     }
     if is_inside {
-        Err("An unclosed left bracket was found.".into())
-    } else {
-        Ok(())
+        bail!("An unclosed left bracket was found.")
     }
+    Ok(())
 }

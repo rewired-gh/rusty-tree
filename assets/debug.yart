@@ -12,7 +12,7 @@
 
 # This is an example.
 
-    [RootNode]  
+    [RootNode]
      [radar    banana                    pen] 
       [bug    ][piano violin   flute]    [🐱🌈            a]   # Emoji and other non-ASCII characters may not be monospace.
                 [pc]           [ olive shrink     嘸蝦米]
