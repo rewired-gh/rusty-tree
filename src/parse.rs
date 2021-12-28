@@ -30,7 +30,7 @@ impl NodeArray {
 
 pub fn set_tree(tree: &mut Tree, lines: &Vec<&str>) -> Result<()> {
     if lines.is_empty() {
-        bail!("Could not found any effective line in the file.");
+        bail!("Could not find any effective line in the file.");
     }
 
     let mut node_arrays_last = Vec::new();
